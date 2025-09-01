@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>PestDetect AI — Instant Pest Diagnosis for Crops</title>
+
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --brand:#2e7d32; --brand-700:#1b5e20; --brand-50:#e8f5e9;
+      --ink:#0f172a; --muted:#64748b; --soft:#f6f9fb; --card:#ffffff;
+      --ring: rgba(46,125,50,.35);
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --soft:#0b1220; --card:#0f172a; --ink:#e6edf4; --muted:#96a3b6;
+        --brand-50:#0f2312;
+      }
+    }
+
+    html,body{ height:100%; }
+    body{
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      background:
+        radial-gradient(900px 360px at 15% -10%, rgba(76,175,80,.20), transparent),
+        radial-gradient(900px 360px at 85% -20%, rgba(76,175,80,.10), transparent),
+        linear-gradient(180deg, var(--soft) 0%, #ffffff00 25%),
+        var(--soft);
+      color:var(--ink);
+    }
+
+    /* Header */
+    .hero{
+      padding: clamp(18px, 4vw, 32px) 0 12px;
+      border-bottom: 1px solid rgba(15,23,42,.06);
+      position: sticky; top: 0; z-index: 5;
+      backdrop-filter: saturate(1.2) blur(8px);
+      background:
+        radial-gradient(1000px 400px at 20% -20%, rgba(76,175,80,.25), transparent),
+        radial-gradient(1000px 400px at 80% -30%, rgba(76,175,80,.15), transparent),
+        linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.72));
+    }
+    @media (prefers-color-scheme: dark){
+      .hero{ background: linear-gradient(180deg, rgba(10,16,28,.75), rgba(10,16,28,.6)); }
+    }
+    .brand-mark{
+      width:52px;height:52px;border-radius:16px;flex:0 0 52px;
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-700));
+      box-shadow:0 10px 25px rgba(46,125,50,.35);
+    }
+    .subtitle{ color:var(--muted); font-weight:600; }
+
+    /* Card */
+    .app-card{
+      background:var(--card);
+      border:1px solid rgba(15,23,42,.06);
+      border-radius:22px;
+      box-shadow:
+        0 30px 60px -20px rgba(16,24,40,.20),
+        inset 0 1px 0 rgba(255,255,255,.35);
+      overflow: clip;
+    }
+
+    /* Tabs */
+    .nav-tabs{ border:0; gap:.5rem; flex-wrap:nowrap; overflow:auto; }
+    .nav-tabs .nav-link{
+      border:0; color:var(--muted); font-weight:700;
+      border-radius:999px; padding:.55rem 1rem;
+      background:linear-gradient(180deg,#fff,#f7faf7);
+      box-shadow:inset 0 0 0 1px rgba(15,23,42,.06);
+      white-space:nowrap;
+    }
+    .nav-tabs .nav-link.active{
+      color:#fff; background:linear-gradient(135deg,var(--brand),var(--brand-700));
+      box-shadow:0 8px 18px rgba(46,125,50,.25);
+    }
+    @media (prefers-color-scheme: dark){
+      .nav-tabs .nav-link{ background: #0e1626; }
+    }
+
+    /* Inputs */
+    .form-label{ font-weight:700; color:#324055; }
+    .form-control{
+      border-radius:14px; padding:.85rem 1rem; border:1px solid rgba(15,23,42,.12);
+    }
+
+    /* Dropzone */
+    .dropzone{
+      border:2px dashed var(--ring); border-radius:16px;
+      background:var(--brand-50);
+      padding: clamp(14px, 3.2vw, 20px);
+      text-align:center; transition:.2s;
+      min-height: 180px;
+      display:flex;align-items:center;justify-content:center;flex-direction:column;
+      position: relative;
+    }
+    .dropzone.dragover{ background: rgba(46,125,50,.08); }
+    .dz-icon{
+      width:56px;height:56px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-700));
+      margin-bottom:.6rem;
+    }
+    .hint{ color:var(--muted); font-size:.92rem; }
+
+    /* Preview */
+    .preview-wrap{ width:100%; }
+    .preview-img{
+      width:100%; border-radius:14px; object-fit:cover;
+      max-height: 340px;
+      box-shadow: 0 12px 28px rgba(15,23,42,.18);
+    }
+
+    /* Buttons */
+    .btn-brand{
+      background:linear-gradient(135deg,var(--brand),var(--brand-700));
+      border:0; color:#fff; font-weight:800;
+      padding:.95rem 1.2rem; border-radius:14px;
+      box-shadow:0 14px 28px rgba(46,125,50,.30);
+    }
+    .btn-brand:active{ transform: translateY(1px); }
+    .btn-wide{ min-width: 172px; }
+
+    /* Sticky action bar on mobile */
+    .action-bar{
+      position: sticky; bottom: env(safe-area-inset-bottom, 0);
+      padding: .5rem; background: transparent;
+      display:flex; justify-content: flex-end;
+    }
+
+    /* Camera UI */
+    video, canvas, img.preview{ width:100%; border-radius:16px; background:#000; }
+    .camera-controls{
+      display:flex; gap:.6rem; align-items:center; justify-content:center; flex-wrap:wrap;
+    }
+    .btn-circle{
+      width:56px; height:56px; border-radius:50%;
+      display:inline-flex; align-items:center; justify-content:center;
+      border:1px solid rgba(15,23,42,.12);
+      background:#fff;
+    }
+    @media (prefers-color-scheme: dark){
+      .btn-circle{ background:#0f172a; color:#e6edf4; border-color:#182235; }
+    }
+
+    /* Footer */
+    .footer{ color:var(--muted); font-size:.95rem; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="hero">
+    <div class="container">
+      <div class="d-flex align-items-center gap-3">
+        <div class="brand-mark"><i class="fa-solid fa-bug-slash"></i></div>
+        <div class="flex-grow-1">
+          <h1 class="h3 mb-1 fw-800">PestDetect AI</h1>
+          <div class="subtitle">Instant, AI-powered pest detection for crops — upload or snap a photo.</div>
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <span class="badge rounded-pill text-bg-light px-3 py-2"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> AI insights</span>
+        <span class="badge rounded-pill text-bg-light px-3 py-2"><i class="fa-solid fa-shield-heart me-1"></i> Prevention & treatment</span>
+        <span class="badge rounded-pill text-bg-light px-3 py-2"><i class="fa-solid fa-mobile-screen me-1"></i> Mobile friendly</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- APP -->
+  <main class="container py-4">
+    <div class="app-card p-3 p-md-4">
+      <ul class="nav nav-tabs px-1" id="tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload" type="button" role="tab">
+            <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="camera-tab" data-bs-toggle="tab" data-bs-target="#camera" type="button" role="tab">
+            <i class="fa-solid fa-camera me-1"></i> Camera
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content pt-3">
+        <!-- UPLOAD TAB -->
+        <section class="tab-pane fade show active" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+          <form action="{{ url_for('analyze') }}" method="post" enctype="multipart/form-data" class="row g-3" id="uploadForm">
+            <div class="col-12">
+              <label class="form-label">Plant Name</label>
+              <input class="form-control" type="text" name="plant_name" placeholder="e.g., Tomato, Apple, Corn" required>
+            </div>
+
+            <div class="col-12">
+              <div class="dropzone" id="dropzone">
+                <div class="dz-icon"><i class="fa-solid fa-image"></i></div>
+                <div class="fw-bold mb-1">Drop an image here, or tap to browse</div>
+                <div class="hint">Supported: JPG, PNG (mobile users can open the camera)</div>
+                <input class="form-control mt-3" style="display:none;" id="fileInput"
+                       type="file" name="plant_image" accept="image/*" capture="environment" required>
+                <div id="previewWrap" class="preview-wrap mt-3 d-none">
+                  <img id="previewImg" class="preview-img" alt="Preview"/>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 action-bar">
+              <button class="btn btn-brand btn-wide" type="submit">
+                <i class="fa-solid fa-magnifying-glass-chart me-2"></i>Analyze
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- CAMERA TAB -->
+        <section class="tab-pane fade" id="camera" role="tabpanel" aria-labelledby="camera-tab">
+          <form id="cameraForm" action="{{ url_for('analyze_camera') }}" method="post" class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Plant Name</label>
+              <input class="form-control" type="text" name="plant_name" id="camPlant" placeholder="e.g., Tomato, Apple, Corn" required>
+            </div>
+
+            <div class="col-12">
+              <video id="video" autoplay playsinline muted style="display:block;"></video>
+              <canvas id="canvas" style="display:none;"></canvas>
+              <img id="snapshot" class="preview mt-2" style="display:none;" alt="Snapshot preview"/>
+              <input type="hidden" name="image_data" id="image_data">
+            </div>
+
+            <div class="col-12 camera-controls">
+              <button class="btn btn-circle" type="button" id="startBtn" title="Start camera">
+                <i class="fa-solid fa-play"></i>
+              </button>
+              <button class="btn btn-circle" type="button" id="flipBtn" title="Flip camera">
+                <i class="fa-solid fa-repeat"></i>
+              </button>
+              <button class="btn btn-circle" type="button" id="torchBtn" title="Toggle torch">
+                <i class="fa-solid fa-bolt"></i>
+              </button>
+              <button class="btn btn-circle" type="button" id="captureBtn" disabled title="Capture">
+                <i class="fa-solid fa-circle-dot"></i>
+              </button>
+              <button class="btn btn-circle" type="button" id="retakeBtn" style="display:none;" title="Retake">
+                <i class="fa-solid fa-rotate-left"></i>
+              </button>
+              <button class="btn btn-brand btn-wide" type="submit" id="analyzeBtn" style="display:none;">
+                <i class="fa-solid fa-magnifying-glass-chart me-1"></i>Analyze
+              </button>
+            </div>
+
+            <p class="text-muted small mt-1 text-center">
+              Tip: Most browsers require HTTPS (or <code>localhost</code>) for camera access.
+            </p>
+          </form>
+        </section>
+      </div>
+    </div>
+
+    <div class="text-center mt-4 footer">
+      <span>Created by <strong>Arif Rahman</strong></span>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ---------- Helpers ----------
+    const qs = sel => document.querySelector(sel);
+
+    // ---------- Drag & Drop upload with live preview ----------
+    const dz = qs('#dropzone');
+    const fileInput = qs('#fileInput');
+    const previewWrap = qs('#previewWrap');
+    const previewImg = qs('#previewImg');
+
+    function showPreview(file){
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        previewImg.src = e.target.result;
+        previewWrap.classList.remove('d-none');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    dz.addEventListener('click', () => fileInput.click());
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', (e) => {
+      e.preventDefault(); dz.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        showPreview(e.dataTransfer.files[0]);
+      }
+    });
+    fileInput.addEventListener('change', () => showPreview(fileInput.files[0]));
+
+    // ---------- Camera logic ----------
+    const video = qs('#video');
+    const canvas = qs('#canvas');
+    const snapshot = qs('#snapshot');
+    const startBtn = qs('#startBtn');
+    const captureBtn = qs('#captureBtn');
+    const retakeBtn = qs('#retakeBtn');
+    const analyzeBtn = qs('#analyzeBtn');
+    const imageDataInput = qs('#image_data');
+    const flipBtn = qs('#flipBtn');
+    const torchBtn = qs('#torchBtn');
+
+    let stream = null;
+    let useFacingMode = 'environment'; // back camera on phones
+    let track = null;
+
+    async function startCamera() {
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; track = null; }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: useFacingMode }, audio: false
+        });
+        video.srcObject = stream;
+        track = stream.getVideoTracks()[0] || null;
+        video.style.display = 'block';
+        snapshot.style.display = 'none';
+        analyzeBtn.style.display = 'none';
+        retakeBtn.style.display = 'none';
+        captureBtn.disabled = false;
+      } catch (err) {
+        alert('Camera error: ' + err.message);
+      }
+    }
+
+    startBtn.addEventListener('click', startCamera);
+
+    flipBtn.addEventListener('click', async () => {
+      useFacingMode = (useFacingMode === 'environment') ? 'user' : 'environment';
+      await startCamera();
+    });
+
+    // Torch toggle where supported
+    torchBtn.addEventListener('click', async () => {
+      try {
+        if (!track) return;
+        const cap = track.getCapabilities?.();
+        if (cap && cap.torch) {
+          const settings = track.getSettings();
+          await track.applyConstraints({ advanced: [{ torch: !settings.torch }] });
+        } else {
+          alert('Torch is not supported on this device/browser.');
+        }
+      } catch (e) {
+        console.log('Torch toggle error:', e);
+      }
+    });
+
+    captureBtn.addEventListener('click', () => {
+      if (!stream) return;
+      const w = video.videoWidth || 640;
+      const h = video.videoHeight || 480;
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, w, h);
+      const dataURL = canvas.toDataURL('image/jpeg', 0.92);
+      imageDataInput.value = dataURL;
+
+      snapshot.src = dataURL;
+      snapshot.style.display = 'block';
+      video.style.display = 'none';
+      analyzeBtn.style.display = 'inline-block';
+      retakeBtn.style.display = 'inline-block';
+      captureBtn.disabled = true;
+    });
+
+    retakeBtn.addEventListener('click', () => {
+      imageDataInput.value = '';
+      snapshot.style.display = 'none';
+      video.style.display = 'block';
+      analyzeBtn.style.display = 'none';
+      retakeBtn.style.display = 'none';
+      captureBtn.disabled = false;
+    });
+
+    // Stop camera when switching to Upload tab
+    document.getElementById('upload-tab').addEventListener('shown.bs.tab', () => {
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; track = null; }
+    });
+
+    // Enable capture when metadata is ready
+    video.addEventListener('loadedmetadata', () => { captureBtn.disabled = false; });
+  </script>
+</body>
+</html>
+
