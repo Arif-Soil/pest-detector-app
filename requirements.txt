@@ -1,6 +1,7 @@
-streamlit
-google-generativeai
-requests
+streamlit>=1.32
 Pillow
-gTTS
+gtts
+python-dotenv
+google-generativeai
+
 
